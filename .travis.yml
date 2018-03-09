@@ -2,7 +2,8 @@ language: python
 
 install:
   - python setup.py install
-  - pip install flake8
+  - pip install flake8 pytest
 
 script:
   - flake8
+  - pytest -v
