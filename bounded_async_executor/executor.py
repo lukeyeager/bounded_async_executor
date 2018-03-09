@@ -65,6 +65,7 @@ class Executor:
                 raise
             else:
                 self._fail_func(e)
+                return
 
         if self._success_func is not None:
             self._success_func(result)
