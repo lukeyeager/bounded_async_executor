@@ -74,3 +74,4 @@ class Executor:
         # Wait for all the remaining futures to complete
         for future in concurrent.futures.as_completed(self._futures):
             self._process_future(future)
+        self._futures = set()

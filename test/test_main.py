@@ -67,6 +67,25 @@ def test_destructor():
     assert total == 2
 
 
+def test_exit_and_destructor():
+    count = 100
+
+    def _internal():
+        results = list()
+
+        def success(x):
+            nonlocal results
+            results.append(x)
+
+        with Executor(lambda x: x, success_handler=success) as executor:
+            for x in range(count):
+                executor.add(x)
+        return results
+
+    results = _internal()
+    assert len(results) == count
+
+
 def test_queue_size():
     total = 0
     count = 10
