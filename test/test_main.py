@@ -153,3 +153,20 @@ def test_submit():
 
     assert successes == 50
     assert failures == 50
+
+
+def test_wait():
+    total = 0
+
+    def result_handler(x):
+        nonlocal total
+        total += x
+
+    executor = Executor(lambda x: x, result_handler)
+
+    for _ in range(100):
+        executor.add(1)
+
+    executor.wait()
+
+    assert total == 100

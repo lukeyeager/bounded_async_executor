@@ -68,15 +68,21 @@ class Executor:
         # Add the new future
         self._futures.add(self._executor.submit(processor, *args, **kwargs))
 
+    def wait(self):
+        """Wait for all the remaining futures to complete."""
+        for future in concurrent.futures.as_completed(self._futures):
+            self._process_future(future)
+        self._futures = set()
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
-            self._shutdown()
+            self.wait()
 
     def __del__(self):
-        self._shutdown()
+        self.wait()
 
     def _process_future(self, future):
         try:
@@ -90,9 +96,3 @@ class Executor:
 
         if self._result_func is not None:
             self._result_func(result)
-
-    def _shutdown(self):
-        # Wait for all the remaining futures to complete
-        for future in concurrent.futures.as_completed(self._futures):
-            self._process_future(future)
-        self._futures = set()
