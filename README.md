@@ -40,14 +40,14 @@ So, I wrote a library to abstract away much of that complexity:
 def download_urls(urls):
     downloaded = 0
 
-    def success(result):
+    def on_success(result):
         nonlocal downloaded
         downloaded += 1
 
-    def failure(error):
+    def on_error(error):
         print(error)
 
-    with bounded_async_executor.Executor(download_url, success_handler=success, failure_handler=failure) as executor:
+    with bounded_async_executor.Executor(download_url, on_success, on_error) as executor:
         for url in urls:
             executor.add(url)
 

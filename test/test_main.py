@@ -16,11 +16,11 @@ def test_with():
 def test_success():
     total = 0
 
-    def success_handler(x):
+    def result_handler(x):
         nonlocal total
         total += x
 
-    with Executor(lambda x: x, success_handler=success_handler) as executor:
+    with Executor(lambda x: x, result_handler=result_handler) as executor:
         executor.add(1)
         executor.add(1)
 
@@ -33,11 +33,11 @@ def test_failure():
     def processor():
         raise ValueError
 
-    def failure_handler(e):
+    def error_handler(e):
         nonlocal failure_count
         failure_count += 1
 
-    with Executor(processor, failure_handler=failure_handler) as executor:
+    with Executor(processor, error_handler=error_handler) as executor:
         executor.add()
         executor.add()
 
@@ -63,6 +63,7 @@ def test_destructor():
     executor = Executor(processor)
     executor.add(1)
     executor.add(1)
+    del executor
 
     assert total == 2
 
@@ -73,11 +74,11 @@ def test_exit_and_destructor():
     def _internal():
         results = list()
 
-        def success(x):
+        def result_handler(x):
             nonlocal results
             results.append(x)
 
-        with Executor(lambda x: x, success_handler=success) as executor:
+        with Executor(lambda x: x, result_handler=result_handler) as executor:
             for x in range(count):
                 executor.add(x)
         return results
@@ -109,12 +110,46 @@ def _multiprocessing_processor(x):
 def test_processes():
     total = 0
 
-    def success_handler(x):
+    def result_handler(x):
         nonlocal total
         total += x
 
-    with Executor(_multiprocessing_processor, success_handler=success_handler,
+    with Executor(_multiprocessing_processor, result_handler=result_handler,
                   processes=True) as executor:
         executor.add(1)
 
     assert total == 1
+
+
+def test_no_processor():
+    with Executor() as executor:
+        with pytest.raises(TypeError):
+            executor.add()
+        with pytest.raises(TypeError):
+            executor.add(1)
+        executor.submit(lambda x: x, 1)
+
+
+def test_submit():
+    successes = 0
+    failures = 0
+
+    def processor(x):
+        if not x % 2:
+            raise RuntimeError
+
+    def result_handler(result):
+        nonlocal successes
+        successes += 1
+
+    def error_handler(error):
+        nonlocal failures
+        failures += 1
+
+    with Executor(result_handler=result_handler,
+                  error_handler=error_handler) as executor:
+        for x in range(100):
+            executor.submit(processor, x)
+
+    assert successes == 50
+    assert failures == 50
