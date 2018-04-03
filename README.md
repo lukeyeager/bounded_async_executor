@@ -1,5 +1,6 @@
 # bounded_async_executor
 
+[![PyPI version](https://badge.fury.io/py/bounded-async-executor.svg)](https://pypi.python.org/pypi/bounded-async-executor)
 [![Build Status](https://travis-ci.org/lukeyeager/bounded_async_executor.svg?branch=master)](https://travis-ci.org/lukeyeager/bounded_async_executor)
 
 I found myself writing too much code that looked like this:
